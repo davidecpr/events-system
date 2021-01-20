@@ -12,9 +12,9 @@ module.exports = async (fastify, opts) => {
 
   fastify.post('/', {
     schema: {
-      body: S.ref('#categorySchema'),
+      body: S.ref('categorySchema'),
       response: {
-        200: S.ref('#categorySchemaResponse'),
+        200: S.ref('categorySchemaResponse'),
         400: S.ref('errorSchema'),
         500: S.ref('errorSchema')
       }
@@ -37,7 +37,7 @@ module.exports = async (fastify, opts) => {
   fastify.get('/all', {
     schema: {
       response: {
-        200: S.array().items(S.ref('#categorySchemaResponse')),
+        200: S.array().items(S.ref('categorySchemaResponse')),
         500: S.ref('errorSchema')
       }
     }
@@ -61,9 +61,9 @@ module.exports = async (fastify, opts) => {
       params: S.object()
         .prop('id', S.string().required()),
       reponse: {
-        200: S.ref('#categorySchemaResponse'),
-        400: S.ref('#errorSchema'),
-        500: S.ref('#errorSchema')
+        200: S.ref('categorySchemaResponse'),
+        400: S.ref('errorSchema'),
+        500: S.ref('errorSchema')
       }
     }
   }, async (req, res) => {
@@ -108,6 +108,42 @@ module.exports = async (fastify, opts) => {
 
       return categoriesList
     } catch (e) {
+      return res.code(500).send({ message: e.message })
+    }
+  })
+
+  fastify.put('/:id', {
+    schema: {
+      body: S.ref('categorySchema'),
+      params: S.object().prop('id', S.string().required()),
+      response: {
+        200: S.ref('categorySchemaResponse'),
+        400: S.ref('errorSchema'),
+        500: S.ref('errorSchema')
+      }
+    }
+  }, async (req, res) => {
+    const { body } = req
+    const { id } = req.params
+
+    const update = {
+      name: body.name,
+      slug: body.slug,
+      description: body.description,
+      icon: body.icon
+    }
+
+    try {
+      await categories.updateOne({ _id: ObjectId(id) },
+        { $set: update },
+        { upsert: false }
+      )
+
+      return body
+    } catch (e) {
+      if (e.code === DUPLICATE_KEY_ERROR) {
+        return res.code(400).send({ message: `Category with name ${body.name} already exist` })
+      }
       return res.code(500).send({ message: e.message })
     }
   })
