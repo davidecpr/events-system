@@ -27,9 +27,4 @@ module.exports = fp(async (fastify, opts) => {
       .prop('logo', S.string())
   )
 
-  fastify.addSchema(
-    S.object()
-      .id('managerSchemaMultipart')
-      .prop('value', S.string().required())
-  )
 })

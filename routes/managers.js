@@ -6,7 +6,6 @@ const fs = require('fs')
 const mime = require('mime')
 
 module.exports = async (fastify, opts) => {
-
   const managers = fastify.mongo.training.db.collection('managers')
   managers.createIndex({
     email: 1
@@ -24,7 +23,11 @@ module.exports = async (fastify, opts) => {
         type: 'object',
         required: ['name', 'description', 'website', 'email', 'file'],
         properties: {
-          name: { $ref: 'managerSchemaMultipart' }
+          name: { properties: {value: {type: 'string'}} },
+          description: { properties: {value: {type: 'string'}} },
+          website: { properties: {value: {type: 'string'}} },
+          email: { properties: {value: {type: 'string', format: 'email'}} },
+          file: { properties: {value: {type: 'object'}} },
         }
       },
       response: {
@@ -61,15 +64,14 @@ module.exports = async (fastify, opts) => {
         })
       })
 
-      return res.code(200).send({message: 'Successfully created manager'})
+      return res.code(200).send({ message: 'Successfully created manager' })
     } catch (e) {
       if (e.code === DUPLICATE_KEY_ERROR) {
-        return res.code(200).send({message: `Manager with email ${body.email.value} already exsist`})
+        return res.code(200).send({ message: `Manager with email ${body.email.value} already exsist` })
       }
       return res.code(500).send({ message: e.message })
     }
   })
-
 
   fastify.get('/:id', {
     schema: {
