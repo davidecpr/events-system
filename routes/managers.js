@@ -19,17 +19,7 @@ module.exports = async (fastify, opts) => {
 
   fastify.post('/', {
     schema: {
-      body: {
-        type: 'object',
-        required: ['name', 'description', 'website', 'email', 'file'],
-        properties: {
-          name: { properties: {value: {type: 'string'}} },
-          description: { properties: {value: {type: 'string'}} },
-          website: { properties: {value: {type: 'string'}} },
-          email: { properties: {value: {type: 'string', format: 'email'}} },
-          file: { properties: {value: {type: 'object'}} },
-        }
-      },
+      body: S.ref('managerSchemaMultipart'),
       response: {
         400: S.ref('errorSchema'),
         500: S.ref('errorSchema')
@@ -39,7 +29,7 @@ module.exports = async (fastify, opts) => {
     const { body } = req
 
     try {
-      const dataFile = await body.file.toBuffer()
+      const dataFile = await body.logo.toBuffer()
 
       const dir = './images'
 
@@ -53,7 +43,7 @@ module.exports = async (fastify, opts) => {
         website: body.website.value,
         email: body.email.value
       }).then(async (result) => {
-        const file = `${dir}/manager_${result.insertedId}.${mime.getExtension(body.file.mimetype)}`
+        const file = `${dir}/manager_${result.insertedId}.${mime.getExtension(body.logo.mimetype)}`
 
         const stream = fs.createWriteStream(`${file}`)
 
@@ -160,6 +150,7 @@ module.exports = async (fastify, opts) => {
     schema: {
       body: S.ref('managerSchema'),
       response: {
+        // 200: S.ref('managerSchemaResponse'),
         400: S.ref('errorSchema'),
         500: S.ref('errorSchema')
       }
@@ -168,21 +159,10 @@ module.exports = async (fastify, opts) => {
     const { body } = req
     const { id } = req.params
 
-    const update = {
-      name: body.name,
-      description: body.description,
-      website: body.website,
-      email: body.email,
-      logo: body.logo
-    }
-
     try {
-      const editManager = await managers.updateOne({ _id: ObjectId(id) },
-        { $set: update },
-        { upsert: false }
-      )
+      const updatedManager = await managers.findOneAndUpdate({ _id: ObjectId(id) }, { $set: body }, { returnOriginal: false })
 
-      return editManager
+      return updatedManager
     } catch (e) {
       if (e.code === DUPLICATE_KEY_ERROR) {
         return res.code(400).send({ message: `Manager with email ${body.email} already exist` })

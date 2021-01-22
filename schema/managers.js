@@ -12,7 +12,6 @@ module.exports = fp(async (fastify, opts) => {
       .prop('description', S.string().required())
       .prop('website', S.string().required())
       .prop('email', S.string().format(S.FORMATS.EMAIL).required())
-      .prop('logo', S.string().required())
   )
 
   fastify.addSchema(
@@ -27,4 +26,14 @@ module.exports = fp(async (fastify, opts) => {
       .prop('logo', S.string())
   )
 
+  fastify.addSchema(
+    S.object()
+      .id('managerSchemaMultipart')
+      .title('Schema for manager multipart')
+      .prop('name', S.object().required().prop('value', S.string().required()))
+      .prop('description', S.object().required().prop('value', S.string().required()))
+      .prop('website', S.object().required().prop('value', S.string().required()))
+      .prop('email', S.object().required().prop('value', S.string().format(S.FORMATS.EMAIL).required()))
+      .prop('logo', S.object().required().prop('file', S.object().required()))
+  )
 })

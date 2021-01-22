@@ -2,7 +2,6 @@
 
 const S = require('fluent-json-schema')
 const DUPLICATE_KEY_ERROR = 11000
-const mime = require('mime')
 const fs = require('fs')
 
 module.exports = async (fastify, opts) => {
@@ -22,42 +21,8 @@ module.exports = async (fastify, opts) => {
   // routes
   fastify.post('/', {
     schema: {
-      body: {
-        type: 'object',
-        required: ['name', 'description', 'images', 'categories', 'manager', 'state', 'maxInvited', 'dateTime', 'duration', 'type', 'tags', 'address', 'link', 'isPublic'],
-        properties: {
-          name: { properties: {value: {type: 'string'}} },
-          description: { properties: {value: {type: 'string'}} },
-          manager: { properties: {value: {type: 'string'}} },
-          state: { properties: {value: {type: 'string'}} },
-          maxInvited: { properties: {value: {type: 'integer'}} },
-          dateTime: { properties: {value: {type: 'string', format: 'date-time'}} },
-          duration: { properties: {value: {type: 'string'}} },
-          type: { properties: {value: {type: 'string'}} },
-          address: { properties: {value: {type: 'string'}} },
-          link: { properties: {value: {type: 'string'}} },
-          isPublic: { properties: {value: {type: 'boolean'}} },
-          images: {
-            required: ['value'],
-            oneOf: [
-              { type: 'object' },
-              { type: 'array' }
-            ]
-          },
-          categories: {
-            oneOf: [
-              { type: 'object' },
-              { type: 'array' }
-            ]
-          },
-          tags: {
-            oneOf: [
-              { type: 'object' },
-              { type: 'array' }
-            ]
-          }
-        }
-      },
+      body: S.ref('eventSchemaMultipart'),
+
       response: {
         400: S.ref('errorSchema'),
         500: S.ref('errorSchema')
@@ -77,7 +42,7 @@ module.exports = async (fastify, opts) => {
           categories.push(ObjectId(category.value))
         })
       } else {
-        categories = body.categories.value
+        categories = ObjectId(body.categories.value)
       }
 
       let tags
@@ -97,7 +62,7 @@ module.exports = async (fastify, opts) => {
         manager: ObjectId(body.manager.value),
         state: body.state.value,
         maxInvited: body.maxInvited.value,
-        dateTime: body.dateTime.value,
+        dateTime: new Date(body.dateTime.value),
         duration: body.duration.value,
         type: body.type.value,
         tags: tags,
@@ -124,9 +89,9 @@ module.exports = async (fastify, opts) => {
               console.log(file)
 
               const stream = fs.createWriteStream(`${file}`)
-  
+
               stream.write(dataFile)
-  
+
               imagesList.push(stream.path)
             }
           })
@@ -218,7 +183,7 @@ module.exports = async (fastify, opts) => {
       body: S.ref('eventSchema'),
       params: S.object().prop('id', S.string().required()),
       response: {
-        200: S.ref('eventSchemaResponse'),
+        // 200: S.ref('eventSchemaResponse'),
         400: S.ref('errorSchema'),
         500: S.ref('errorSchema')
       }
@@ -227,30 +192,13 @@ module.exports = async (fastify, opts) => {
     const { body } = req
     const { id } = req.params
 
-    const update = {
-      name: body.name,
-      description: body.description,
-      images: body.images,
-      categories: body.categories,
-      manager: body.manager,
-      state: body.state,
-      maxInvited: body.maxInvited,
-      dateTime: body.dateTime,
-      duration: body.duration,
-      type: body.type,
-      tags: body.tags,
-      address: body.address,
-      link: body.link,
-      isPublic: body.isPublic
-    }
-
     try {
-      await events.updateOne({ _id: ObjectId(id) },
-        { $set: update },
-        { upsert: false }
+      const updatedEvent = await events.findOneAndUpdate({ _id: ObjectId(id) },
+        { $set: body },
+        { returnOriginal: false }
       )
 
-      return body
+      return updatedEvent
     } catch (e) {
       if (e.code === DUPLICATE_KEY_ERROR) {
         return res.code(400).send({ message: `Event with name ${body.name} already exist` })
