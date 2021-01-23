@@ -30,10 +30,10 @@ module.exports = async (fastify, opts) => {
       let categories
       if (Array.isArray(body.categories)) {
         categories = []
-        body.categories.forEach(category => {
+        for (let category of body.categories) {
           fastify.log.debug(category.value)
           categories.push(ObjectId(category.value))
-        })
+        }
       } else {
         categories = ObjectId(body.categories.value)
       }
@@ -41,9 +41,9 @@ module.exports = async (fastify, opts) => {
       let tags
       if (Array.isArray(body.tags)) {
         tags = []
-        body.tags.forEach(tag => {
+        for (let tag of body.tags) {
           tags.push(tag.value)
-        })
+        }
       } else {
         tags = body.tags.value
       }
@@ -74,7 +74,8 @@ module.exports = async (fastify, opts) => {
         }
 
         if (Array.isArray(body.images)) {
-          body.images.forEach(async (image) => {
+
+          for (let image of body.images) {
             if (image.mimetype.match(/.(jpg|jpeg|png)$/i)) {
               const dataFile = await image.toBuffer()
 
@@ -87,7 +88,7 @@ module.exports = async (fastify, opts) => {
 
               imagesList.push(stream.path)
             }
-          })
+          }
 
           await events.updateOne({ _id: ObjectId(result.insertedId) }, {
             $set: { images: imagesList }
