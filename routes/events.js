@@ -11,13 +11,6 @@ module.exports = async (fastify, opts) => {
   }, { unique: true })
   const { ObjectId } = fastify.mongo
 
-  // register fastify-multipart plugin
-  const options = {
-    attachFieldsToBody: true
-  }
-
-  fastify.register(require('fastify-multipart'), options)
-
   // routes
   fastify.post('/', {
     schema: {
