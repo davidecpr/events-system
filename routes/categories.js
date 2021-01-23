@@ -101,7 +101,7 @@ module.exports = async (fastify, opts) => {
 
   fastify.get('/search/:query', async (req, res) => {
     const { query } = req.params
-    console.log(query)
+    fastify.log.debug(query)
 
     try {
       const categoriesList = await categories.find({ $or: [{ name: query }, { slug: query }, { description: query }] }).toArray()

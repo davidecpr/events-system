@@ -31,7 +31,7 @@ module.exports = async (fastify, opts) => {
       if (Array.isArray(body.categories)) {
         categories = []
         body.categories.forEach(category => {
-          console.log(category.value)
+          fastify.log.debug(category.value)
           categories.push(ObjectId(category.value))
         })
       } else {
@@ -79,7 +79,7 @@ module.exports = async (fastify, opts) => {
               const dataFile = await image.toBuffer()
 
               const file = `${dir}/event_${result.insertedId}/${image.filename}`
-              console.log(file)
+              fastify.log.debug(file)
 
               const stream = fs.createWriteStream(`${file}`)
 

@@ -123,9 +123,9 @@ module.exports = async (fastify, opts) => {
         return eventsList
       } else if (filter === 'date') {
         // filter by date
-        console.log(new Date(query))
+        fastify.log.debug(new Date(query))
         const date = new Date(query)
-        console.log(new Date(date.setDate(date.getDate() + 1)))
+        fastify.log.debug(new Date(date.setDate(date.getDate() + 1)))
 
         const eventsList = await events.find({
           dateTime: { $gt: new Date(query), $lt: new Date(date.setDate(date.getDate() + 1)) }
