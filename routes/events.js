@@ -3,6 +3,9 @@
 const S = require('fluent-json-schema')
 const DUPLICATE_KEY_ERROR = 11000
 const fs = require('fs')
+const imagesDir = '../images'
+const path = require('path')
+const mime = require('mime')
 
 module.exports = async (fastify, opts) => {
   const events = fastify.mongo.training.db.collection('events')
@@ -25,7 +28,6 @@ module.exports = async (fastify, opts) => {
     const { body } = req
 
     try {
-      const dir = './images'
 
       let categories
       if (Array.isArray(body.categories)) {
@@ -64,13 +66,17 @@ module.exports = async (fastify, opts) => {
         isPublic: body.isPublic.value
       }).then(async (result) => {
         const imagesList = []
+ 
+        const dir = path.join(__dirname, imagesDir)
 
         if (!fs.existsSync(dir)) {
           fs.mkdirSync(dir)
         }
 
-        if (!fs.existsSync(`${dir}/event_${result.insertedId}`)) {
-          fs.mkdirSync(`${dir}/event_${result.insertedId}`)
+        const eventDir = path.join(dir, `event_${result.insertedId}`)
+
+        if (!fs.existsSync(eventDir)) {
+          fs.mkdirSync(eventDir)
         }
 
         if (Array.isArray(body.images)) {
@@ -78,11 +84,8 @@ module.exports = async (fastify, opts) => {
           for (let image of body.images) {
             if (image.mimetype.match(/.(jpg|jpeg|png)$/i)) {
               const dataFile = await image.toBuffer()
-
-              const file = `${dir}/event_${result.insertedId}/${image.filename}`
-              fastify.log.debug(file)
-
-              const stream = fs.createWriteStream(`${file}`)
+              const eventImg = path.join(eventDir, Date.now() + '.' + mime.getExtension(image.mimetype))
+              const stream = fs.createWriteStream(eventImg)
 
               stream.write(dataFile)
 
@@ -95,10 +98,9 @@ module.exports = async (fastify, opts) => {
           })
         } else {
           const dataFile = await body.images.toBuffer()
+          const eventImg = path.join(eventDir, Date.now() + '.' + mime.getExtension(body.images.mimetype))
 
-          const file = `${dir}/event_${result.insertedId}/${body.images.filename}`
-
-          const stream = fs.createWriteStream(`${file}`)
+          const stream = fs.createWriteStream(eventImg)
 
           stream.write(dataFile)
 
@@ -122,6 +124,7 @@ module.exports = async (fastify, opts) => {
       }
     }
   }, async (req, res) => {
+
     try {
       const eventsList = await events.find({}).sort({
         dateTime: -1

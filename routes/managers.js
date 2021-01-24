@@ -4,6 +4,9 @@ const S = require('fluent-json-schema')
 const DUPLICATE_KEY_ERROR = 11000
 const fs = require('fs')
 const mime = require('mime')
+const imagesDir = '../images'
+const path = require('path')
+const { dirname } = require('path')
 
 module.exports = async (fastify, opts) => {
   const managers = fastify.mongo.training.db.collection('managers')
@@ -25,11 +28,10 @@ module.exports = async (fastify, opts) => {
 
     try {
       const dataFile = await body.logo.toBuffer()
+      const imgDir = path.join(__dirname, imagesDir)
 
-      const dir = './images'
-
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir)
+      if (!fs.existsSync(imgDir)) {
+        fs.mkdirSync(imgDir)
       }
 
       await managers.insertOne({
@@ -38,9 +40,10 @@ module.exports = async (fastify, opts) => {
         website: body.website.value,
         email: body.email.value
       }).then(async (result) => {
-        const file = `${dir}/manager_${result.insertedId}.${mime.getExtension(body.logo.mimetype)}`
 
-        const stream = fs.createWriteStream(`${file}`)
+        const managerImage = path.join(imgDir, `manager_${Date.now()}.${mime.getExtension(body.logo.mimetype)}`)
+
+        const stream = fs.createWriteStream(managerImage)
 
         stream.write(dataFile)
 
