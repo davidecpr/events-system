@@ -115,7 +115,7 @@ module.exports = async (fastify, opts) => {
     }
   })
 
-  fastify.get('/all', {
+  fastify.post('/all', {
     schema: {
       response: {
         200: S.array().items(S.ref('eventSchemaResponse')),
@@ -123,12 +123,45 @@ module.exports = async (fastify, opts) => {
       }
     }
   }, async (req, res) => {
-    try {
-      const eventsList = await events.find({}).sort({
-        dateTime: -1
-      }).toArray()
+    const { category } = req.body
+    const { manager } = req.body
+    const { date } = req.body
 
-      return eventsList
+    try {
+      if (category !== undefined && category !== '') {
+        const eventsList = await events.find({
+          categories: category
+        }).sort({
+          dateTime: 1
+        }).toArray()
+
+        return eventsList
+      } else if (manager !== undefined && manager !== '') {
+        const eventsList = await events.find({
+          manager: manager
+        }).sort({
+          dateTime: 1
+        }).toArray()
+
+        return eventsList
+      } else if (date !== undefined && date !== '') {
+        const queryDate = new Date(date)
+        const eventsList = await events.find({
+          dateTime: { $gt: new Date(date), $lt: new Date(queryDate.setDate(queryDate.getDate() + 1)) }
+        })
+          .sort({
+            dateTime: 1
+          })
+          .toArray()
+
+        return eventsList
+      } else {
+        const eventsList = await events.find({}).sort({
+          dateTime: -1
+        }).toArray()
+
+        return eventsList
+      }
     } catch (e) {
       return res.code(500).send({ message: e.message })
     }
@@ -193,7 +226,7 @@ module.exports = async (fastify, opts) => {
         { returnOriginal: false }
       )
 
-      Object.assign(body, {_id: id})
+      Object.assign(body, { _id: id })
 
       return body
     } catch (e) {

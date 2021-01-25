@@ -158,7 +158,7 @@ module.exports = async (fastify, opts) => {
     try {
       await managers.findOneAndUpdate({ _id: ObjectId(id) }, { $set: body }, { returnOriginal: false })
 
-      Object.assign(body, {_id: id})
+      Object.assign(body, { _id: id })
       return body
     } catch (e) {
       if (e.code === DUPLICATE_KEY_ERROR) {
