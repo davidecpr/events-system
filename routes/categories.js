@@ -117,7 +117,7 @@ module.exports = async (fastify, opts) => {
       body: S.ref('categorySchema'),
       params: S.object().prop('id', S.string().required()),
       response: {
-        // 200: S.ref('categorySchemaResponse'),
+        200: S.ref('categorySchemaResponse'),
         400: S.ref('errorSchema'),
         500: S.ref('errorSchema')
       }
@@ -127,9 +127,10 @@ module.exports = async (fastify, opts) => {
     const { id } = req.params
 
     try {
-      const updatedCategory = await categories.findOneAndUpdate({ _id: ObjectId(id) }, { $set: body }, { returnOriginal: false })
+      await categories.findOneAndUpdate({ _id: ObjectId(id) }, { $set: body }, { returnOriginal: false })
 
-      return updatedCategory
+      Object.assign(body, {_id: id})
+      return body
     } catch (e) {
       if (e.code === DUPLICATE_KEY_ERROR) {
         return res.code(400).send({ message: `Category with name ${body.name} already exist` })

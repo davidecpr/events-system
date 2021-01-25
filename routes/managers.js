@@ -146,7 +146,7 @@ module.exports = async (fastify, opts) => {
     schema: {
       body: S.ref('managerSchema'),
       response: {
-        // 200: S.ref('managerSchemaResponse'),
+        200: S.ref('managerSchemaResponse'),
         400: S.ref('errorSchema'),
         500: S.ref('errorSchema')
       }
@@ -156,9 +156,10 @@ module.exports = async (fastify, opts) => {
     const { id } = req.params
 
     try {
-      const updatedManager = await managers.findOneAndUpdate({ _id: ObjectId(id) }, { $set: body }, { returnOriginal: false })
+      await managers.findOneAndUpdate({ _id: ObjectId(id) }, { $set: body }, { returnOriginal: false })
 
-      return updatedManager
+      Object.assign(body, {_id: id})
+      return body
     } catch (e) {
       if (e.code === DUPLICATE_KEY_ERROR) {
         return res.code(400).send({ message: `Manager with email ${body.email} already exist` })

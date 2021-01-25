@@ -28,7 +28,7 @@ module.exports = fp(async (fastify, opts) => {
       .id('eventSchemaResponse')
       .title('Schema for event response')
       .prop('_id', S.string())
-      .prop('name', S.string())
+      .prop('name', S.oneOf([S.string(), S.object().prop('value', S.string())]))
       .prop('description', S.string())
       .prop('images', S.oneOf([S.string(), S.array()]))
       .prop('categories', S.oneOf([S.string(), S.array()]))

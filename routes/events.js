@@ -84,7 +84,7 @@ module.exports = async (fastify, opts) => {
           if (image.mimetype.match(/.(jpg|jpeg|png)$/i)) {
             const dataFile = await image.toBuffer()
             const eventImg = path.join(eventDir, Date.now() + '.' + mime.getExtension(image.mimetype))
-            
+
             const stream = fs.createWriteStream(eventImg)
 
             stream.write(dataFile)
@@ -178,7 +178,7 @@ module.exports = async (fastify, opts) => {
       body: S.ref('eventSchema'),
       params: S.object().prop('id', S.string().required()),
       response: {
-        // 200: S.ref('eventSchemaResponse'),
+        200: S.ref('eventSchemaResponse'),
         400: S.ref('errorSchema'),
         500: S.ref('errorSchema')
       }
@@ -188,12 +188,14 @@ module.exports = async (fastify, opts) => {
     const { id } = req.params
 
     try {
-      const updatedEvent = await events.findOneAndUpdate({ _id: ObjectId(id) },
+      await events.findOneAndUpdate({ _id: ObjectId(id) },
         { $set: body },
         { returnOriginal: false }
       )
 
-      return updatedEvent
+      Object.assign(body, {_id: id})
+
+      return body
     } catch (e) {
       if (e.code === DUPLICATE_KEY_ERROR) {
         return res.code(400).send({ message: `Event with name ${body.name} already exist` })
