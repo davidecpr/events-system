@@ -28,11 +28,10 @@ module.exports = async (fastify, opts) => {
     const { body } = req
 
     try {
-
       let categories
       if (Array.isArray(body.categories)) {
         categories = []
-        for (let category of body.categories) {
+        for (const category of body.categories) {
           fastify.log.debug(category.value)
           categories.push(ObjectId(category.value))
         }
@@ -43,14 +42,14 @@ module.exports = async (fastify, opts) => {
       let tags
       if (Array.isArray(body.tags)) {
         tags = []
-        for (let tag of body.tags) {
+        for (const tag of body.tags) {
           tags.push(tag.value)
         }
       } else {
         tags = body.tags.value
       }
 
-      await events.insertOne({
+      const event = await events.insertOne({
         name: body.name.value,
         description: body.name.value,
         categories: categories,
@@ -64,53 +63,53 @@ module.exports = async (fastify, opts) => {
         address: body.address.value,
         link: body.link.value,
         isPublic: body.isPublic.value
-      }).then(async (result) => {
-        const imagesList = []
- 
-        const dir = path.join(__dirname, imagesDir)
-
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir)
-        }
-
-        const eventDir = path.join(dir, `event_${result.insertedId}`)
-
-        if (!fs.existsSync(eventDir)) {
-          fs.mkdirSync(eventDir)
-        }
-
-        if (Array.isArray(body.images)) {
-
-          for (let image of body.images) {
-            if (image.mimetype.match(/.(jpg|jpeg|png)$/i)) {
-              const dataFile = await image.toBuffer()
-              const eventImg = path.join(eventDir, Date.now() + '.' + mime.getExtension(image.mimetype))
-              const stream = fs.createWriteStream(eventImg)
-
-              stream.write(dataFile)
-
-              imagesList.push(stream.path)
-            }
-          }
-
-          await events.updateOne({ _id: ObjectId(result.insertedId) }, {
-            $set: { images: imagesList }
-          })
-        } else {
-          const dataFile = await body.images.toBuffer()
-          const eventImg = path.join(eventDir, Date.now() + '.' + mime.getExtension(body.images.mimetype))
-
-          const stream = fs.createWriteStream(eventImg)
-
-          stream.write(dataFile)
-
-          await events.updateOne({ _id: ObjectId(result.insertedId) }, {
-            $set: { images: stream.path }
-          })
-        }
-
-        return res.code(200).send({ message: 'Successfully created event' })
       })
+
+      const imagesList = []
+
+      const dir = path.join(__dirname, imagesDir)
+
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir)
+      }
+
+      const eventDir = path.join(dir, `event_${event.insertedId}`)
+
+      if (!fs.existsSync(eventDir)) {
+        fs.mkdirSync(eventDir)
+      }
+
+      if (Array.isArray(body.images)) {
+        for (const image of body.images) {
+          if (image.mimetype.match(/.(jpg|jpeg|png)$/i)) {
+            const dataFile = await image.toBuffer()
+            const eventImg = path.join(eventDir, Date.now() + '.' + mime.getExtension(image.mimetype))
+            
+            const stream = fs.createWriteStream(eventImg)
+
+            stream.write(dataFile)
+
+            imagesList.push(stream.path)
+          }
+        }
+
+        await events.updateOne({ _id: ObjectId(event.insertedId) }, {
+          $set: { images: imagesList }
+        })
+      } else {
+        const dataFile = await body.images.toBuffer()
+        const eventImg = path.join(eventDir, Date.now() + '.' + mime.getExtension(body.images.mimetype))
+
+        const stream = fs.createWriteStream(eventImg)
+
+        stream.write(dataFile)
+
+        await events.updateOne({ _id: ObjectId(event.insertedId) }, {
+          $set: { images: stream.path }
+        })
+      }
+
+      return res.code(200).send({ message: 'Successfully created event' })
     } catch (e) {
       return res.code(500).send({ message: e.message })
     }
@@ -124,7 +123,6 @@ module.exports = async (fastify, opts) => {
       }
     }
   }, async (req, res) => {
-
     try {
       const eventsList = await events.find({}).sort({
         dateTime: -1

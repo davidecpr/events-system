@@ -6,7 +6,6 @@ const fs = require('fs')
 const mime = require('mime')
 const imagesDir = '../images'
 const path = require('path')
-const { dirname } = require('path')
 
 module.exports = async (fastify, opts) => {
   const managers = fastify.mongo.training.db.collection('managers')
@@ -34,22 +33,21 @@ module.exports = async (fastify, opts) => {
         fs.mkdirSync(imgDir)
       }
 
-      await managers.insertOne({
+      const manager = await managers.insertOne({
         name: body.name.value,
         description: body.description.value,
         website: body.website.value,
         email: body.email.value
-      }).then(async (result) => {
+      })
 
-        const managerImage = path.join(imgDir, `manager_${Date.now()}.${mime.getExtension(body.logo.mimetype)}`)
+      const managerImage = path.join(imgDir, `manager_${Date.now()}.${mime.getExtension(body.logo.mimetype)}`)
 
-        const stream = fs.createWriteStream(managerImage)
+      const stream = fs.createWriteStream(managerImage)
 
-        stream.write(dataFile)
+      stream.write(dataFile)
 
-        await managers.updateOne({ _id: ObjectId(result.insertedId) }, {
-          $set: { logo: stream.path }
-        })
+      await managers.updateOne({ _id: ObjectId(manager.insertedId) }, {
+        $set: { logo: stream.path }
       })
 
       return res.code(200).send({ message: 'Successfully created manager' })
