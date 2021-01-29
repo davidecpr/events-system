@@ -15,7 +15,7 @@ module.exports = async (fastify, opts) => {
     schema: {
       security: [
         {
-          "JWT": []
+          JWT: []
         }
       ],
       tags: ['Categorie'],
@@ -49,7 +49,7 @@ module.exports = async (fastify, opts) => {
     schema: {
       security: [
         {
-          "JWT": []
+          JWT: []
         }
       ],
       tags: ['Categorie'],
@@ -67,7 +67,6 @@ module.exports = async (fastify, opts) => {
     const { body } = req
 
     try {
-
       const catregory = await categoryCollection.findOne({ _id: ObjectId(id) })
       if (!catregory) { return res.code(404).send({ message: 'Category not found' }) }
 
@@ -90,7 +89,7 @@ module.exports = async (fastify, opts) => {
     schema: {
       security: [
         {
-          "JWT": []
+          JWT: []
         }
       ],
       tags: ['Categorie'],
@@ -105,7 +104,6 @@ module.exports = async (fastify, opts) => {
     const { id } = req.params
 
     try {
-
       if (!await categoryCollection.findOne({ _id: ObjectId(id) })) { return res.code(404).send({ message: 'Category not found' }) }
 
       await categoryCollection.deleteOne({ _id: ObjectId(id) })

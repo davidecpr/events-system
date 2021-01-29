@@ -18,7 +18,7 @@ module.exports = async (fastify, opts) => {
     schema: {
       security: [
         {
-          "JWT": []
+          JWT: []
         }
       ],
       tags: ['Organizzatori'],
@@ -52,7 +52,7 @@ module.exports = async (fastify, opts) => {
     schema: {
       security: [
         {
-          "JWT": []
+          JWT: []
         }
       ],
       tags: ['Organizzatori'],
@@ -70,7 +70,6 @@ module.exports = async (fastify, opts) => {
     const { body } = req
 
     try {
-
       const manager = await managersCollection.findOne({ _id: ObjectId(id) })
       if (!manager) { return res.code(404).send({ message: 'Manager not found' }) }
 
@@ -89,7 +88,7 @@ module.exports = async (fastify, opts) => {
     schema: {
       security: [
         {
-          "JWT": []
+          JWT: []
         }
       ],
       tags: ['Organizzatori'],
@@ -104,7 +103,6 @@ module.exports = async (fastify, opts) => {
     const { id } = req.params
 
     try {
-
       const manager = await managersCollection.findOne({ _id: ObjectId(id) })
       if (!manager) { return res.code(404).send({ message: 'Manager not found' }) }
 
@@ -125,7 +123,7 @@ module.exports = async (fastify, opts) => {
     schema: {
       security: [
         {
-          "JWT": []
+          JWT: []
         }
       ],
       tags: ['Organizzatori'],
@@ -143,13 +141,12 @@ module.exports = async (fastify, opts) => {
     const { id } = req.params
 
     try {
-
       const manager = await managersCollection.findOne({ _id: ObjectId(id) })
       if (!manager) { return res.code(404).send({ message: 'Manager not found' }) }
 
       checkDirectory()
 
-      if (!body.logo.mimetype.match(/.(jpg|jpeg|png)$/i)) { return res.code(500).send({ message: `File ${photo.filename} is not an image` }) }
+      if (!body.logo.mimetype.match(/.(jpg|jpeg|png)$/i)) { return res.code(500).send({ message: `File ${body.logo.filename} is not an image` }) }
 
       const file = await body.logo.toBuffer()
       const fileName = `manager_${id}.${mime.getExtension(body.logo.mimetype)}`
@@ -164,9 +161,8 @@ module.exports = async (fastify, opts) => {
 
       return { url: path.join(__dirname, imgsDir, fileName) }
     } catch (e) {
-      return res.code(500).send({message: e.message})
+      return res.code(500).send({ message: e.message })
     }
-    
   })
 
   function checkDirectory () {

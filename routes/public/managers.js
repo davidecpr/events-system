@@ -1,10 +1,6 @@
 'use strict'
 
 const S = require('fluent-json-schema')
-const DUPLICATE_KEY_ERROR = 11000
-const fs = require('fs')
-const mime = require('mime')
-const imgsDir = '../../public/managers'
 const path = require('path')
 
 module.exports = async (fastify, opts) => {
@@ -29,7 +25,6 @@ module.exports = async (fastify, opts) => {
     const { id } = req.params
 
     try {
-
       const manager = await managersCollection.findOne({ _id: ObjectId(id) })
       if (!manager) { return res.code(404).send({ message: 'Manager not found' }) }
 
@@ -69,17 +64,13 @@ module.exports = async (fastify, opts) => {
     const { id } = req.params
 
     try {
-
       const manager = await managersCollection.findOne({ _id: ObjectId(id) })
-      if (!manager)
-        return res.code(404).send({message: 'Manager not found'})
+      if (!manager) { return res.code(404).send({ message: 'Manager not found' }) }
 
       return res.sendFile(`managers/manager_${id}${path.extname(manager.logo)}`)
-
     } catch (e) {
       return res.code(500).send({ message: e.message })
     }
-
   })
 }
 

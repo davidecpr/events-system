@@ -18,14 +18,14 @@ module.exports = async function (fastify, opts) {
       body: S.object()
         .prop('username', S.string()
           .maxLength(10)
-          .description("The preferred username")
+          .description('The preferred username')
           .required())
         .prop('password', S.string()
-          .description("The password")
+          .description('The password')
           .required())
         .prop('fullName', S.string()
           .maxLength(50)
-          .description("The name of the user")
+          .description('The name of the user')
           .required()),
       response: {
         200: S.object()
@@ -33,7 +33,7 @@ module.exports = async function (fastify, opts) {
         400: S.ref('errorSchema')
       }
     }
-  },  
+  },
   async function (req, res) {
     const user = req.body
     const hashedPassword = await pwd.hash(Buffer.from(user.password))
@@ -60,10 +60,10 @@ module.exports = async function (fastify, opts) {
       tags: ['Autenticazione'],
       body: S.object()
         .prop('username', S.string()
-          .description("The preferred username")
+          .description('The preferred username')
           .required())
         .prop('password', S.string()
-          .description("The user password")
+          .description('The user password')
           .required()),
       response: {
         200: S.object()
@@ -97,10 +97,11 @@ module.exports = async function (fastify, opts) {
           .code(400)
           .send({ message: 'Invalid password' })
         return
-      case securePassword.VALID_NEEDS_REHASH:
+      case securePassword.VALID_NEEDS_REHASH: {
         const hashedPassword = await pwd.hash(Buffer.from(password))
         await authUser.update({ _id: user._id }, { hashedPassword })
         break
+      }
     }
 
     const token = await reply.jwtSign({ username: username, fullName: user.fullName })

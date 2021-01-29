@@ -38,6 +38,4 @@ module.exports = fp(async (fastify, opts) => {
       .prop('email', S.object().required().prop('value', S.string().format(S.FORMATS.EMAIL).required()))
       .prop('logo', S.object().required().prop('file', S.object().required()))
   )
-
-  
 })

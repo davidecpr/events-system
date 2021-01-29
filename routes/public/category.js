@@ -7,7 +7,7 @@ module.exports = async (fastify, opts) => {
   categoryCollection.createIndex({
     name: 1
   }, { unique: true })
-  const {ObjectId} = fastify.mongo
+  const { ObjectId } = fastify.mongo
 
   fastify.get('/all', {
     schema: {
@@ -40,7 +40,6 @@ module.exports = async (fastify, opts) => {
     const { id } = req.params
 
     try {
-
       const category = await categoryCollection.findOne({ _id: ObjectId(id) })
       if (!category) { return res.code(404).send({ message: 'Category not found' }) }
 

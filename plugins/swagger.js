@@ -36,12 +36,11 @@ module.exports = fp(async (fastify, opts) => {
           type: 'apiKey',
           name: 'Authorization',
           in: 'header',
-          value: "Bearer"
+          value: 'Bearer'
         }
       }
     }
   }, opts.swagger)
-
 
   fastify.register(Swagger, options)
 })

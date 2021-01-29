@@ -1,7 +1,7 @@
 'use strict'
 
 const { test } = require('tap')
-const { 
+const {
   build
 } = require('../helper')
 
@@ -36,10 +36,9 @@ test('create auth User', async (t) => {
   t.equal(res.statusCode, 200)
   t.equal(typeof JSON.parse(res.body), 'object')
   t.equal(typeof JSON.parse(res.body).token, 'string')
-
 })
 
-test('create user and Login', async (t) =>{
+test('create user and Login', async (t) => {
   const app = build(t)
 
   await app.inject({
@@ -100,7 +99,6 @@ test('create user and bad login', async (t) => {
   })
 
   t.equal(res400.statusCode, 400)
-
 })
 
 test('create user and bad request', async (t) => {
@@ -125,5 +123,4 @@ test('create user and bad request', async (t) => {
   })
 
   t.equal(res.statusCode, 400)
-
 })

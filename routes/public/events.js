@@ -7,7 +7,7 @@ module.exports = async (fastify, opts) => {
   eventsCollection.createIndex({
     name: 1
   }, { unique: true })
-  const {ObjectId} = fastify.mongo 
+  const { ObjectId } = fastify.mongo
 
   fastify.get('/:id', {
     schema: {
@@ -37,8 +37,8 @@ module.exports = async (fastify, opts) => {
     schema: {
       tags: ['Eventi'],
       params: S.object()
-      .prop('eventId', S.raw({ type: 'string', pattern: '^[0-9a-fA-F]{24}$' }).required())
-      .prop('photo', S.raw({ type: 'string', pattern: '\.(jpg|png|jpeg)' }).minLength(5).required()),
+        .prop('eventId', S.raw({ type: 'string', pattern: '^[0-9a-fA-F]{24}$' }).required())
+        .prop('photo', S.raw({ type: 'string', pattern: '(jpg|png|jpeg)' }).minLength(5).required()),
       response: {
         404: S.ref('errorSchema'),
         400: S.ref('errorSchema'),
@@ -47,16 +47,14 @@ module.exports = async (fastify, opts) => {
     }
   }, async (req, res) => {
     const { eventId } = req.params
-    const {photo} = req.params
+    const { photo } = req.params
 
     try {
-
       const event = await eventsCollection.findOne({ _id: ObjectId(eventId) })
       if (!event) {
-        return res.code(404).send({message: 'Event not found'})
+        return res.code(404).send({ message: 'Event not found' })
       }
       return res.sendFile(`events/event_${eventId}/${photo}`)
-
     } catch (e) {
       return res.code(500).send({ message: e.message })
     }
@@ -66,9 +64,9 @@ module.exports = async (fastify, opts) => {
     schema: {
       tags: ['Eventi'],
       body: S.object()
-      .prop('category', S.raw({ type: 'string', pattern: '^[0-9a-fA-F]{24}$' }))
-      .prop('manager', S.raw({ type: 'string', pattern: '^[0-9a-fA-F]{24}$' }))
-      .prop('date', S.string().format(S.FORMATS.DATE)),
+        .prop('category', S.raw({ type: 'string', pattern: '^[0-9a-fA-F]{24}$' }))
+        .prop('manager', S.raw({ type: 'string', pattern: '^[0-9a-fA-F]{24}$' }))
+        .prop('date', S.string().format(S.FORMATS.DATE)),
       response: {
         200: S.array().items(S.ref('eventSchemaResponse')),
         400: S.ref('errorSchema'),
@@ -81,21 +79,20 @@ module.exports = async (fastify, opts) => {
     const { date } = req.body
 
     try {
-
       const obj = {}
 
       if (category !== undefined && category !== '') {
         Object.assign(obj, {
           category: category
         })
-      } 
-      
+      }
+
       if (manager !== undefined && manager !== '') {
         Object.assign(obj, {
           manager: manager
         })
-      } 
-      
+      }
+
       if (date !== undefined && date !== '') {
         const queryDate = new Date(date)
         Object.assign(obj, {
@@ -103,7 +100,7 @@ module.exports = async (fastify, opts) => {
         })
       } else {
         Object.assign(obj, {
-          $expr:{$gt:["$endDateTime", new Date()]}
+          $expr: { $gt: ['$endDateTime', new Date()] }
         })
       }
 
@@ -111,9 +108,7 @@ module.exports = async (fastify, opts) => {
         dateTime: -1
       }).toArray()
 
-     
       return eventsList
-
     } catch (e) {
       return res.code(500).send({ message: e.message })
     }

@@ -13,11 +13,11 @@ const urlMongo = 'mongodb://localhost:27017'
 const database = 'tests'
 const { MongoClient } = require('mongodb')
 
-let client 
+let client
 
 beforeEach(async function () {
   if (!client) {
-    client = await MongoClient.connect(urlMongo, { 
+    client = await MongoClient.connect(urlMongo, {
       w: 1,
       useNewUrlParser: true
     })
@@ -74,7 +74,6 @@ function config () {
     }
   }
 }
-
 
 // automatically build and tear down our instance
 function build (t) {

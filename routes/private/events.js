@@ -21,7 +21,7 @@ module.exports = async (fastify, opts) => {
     schema: {
       security: [
         {
-          "JWT": []
+          JWT: []
         }
       ],
       tags: ['Eventi'],
@@ -30,7 +30,7 @@ module.exports = async (fastify, opts) => {
         200: S.ref('eventSchemaResponse'),
         400: S.ref('errorSchema'),
         404: S.ref('errorSchema'),
-        500: S.ref('errorSchema'),
+        500: S.ref('errorSchema')
       }
     }
   }, async (req, res) => {
@@ -50,8 +50,7 @@ module.exports = async (fastify, opts) => {
       const startEvent = new Date(body.startDateTime)
       const endEvent = new Date(body.endDateTime)
 
-      if (endEvent <= startEvent) 
-        return res.code(500).send({message: 'The start date cannot be less than or equal to the end date'})
+      if (endEvent <= startEvent) { return res.code(500).send({ message: 'The start date cannot be less than or equal to the end date' }) }
 
       Object.assign(body, {
         dateTime: dateEvent,
@@ -74,12 +73,11 @@ module.exports = async (fastify, opts) => {
     }
   })
 
-
   fastify.put('/:id', {
     schema: {
       security: [
         {
-          "JWT": []
+          JWT: []
         }
       ],
       tags: ['Eventi'],
@@ -97,17 +95,14 @@ module.exports = async (fastify, opts) => {
     const { id } = req.params
 
     try {
-
       const event = await eventsCollection.findOne({ _id: ObjectId(id) })
       if (!event) { return res.code(404).send({ message: 'Event not found' }) }
 
-      const category = await categoriesCollection.findOne({ _id: ObjectId(body.category)})
-      if (!category)
-        return res.code(404).send({message: 'Category not found'})
+      const category = await categoriesCollection.findOne({ _id: ObjectId(body.category) })
+      if (!category) { return res.code(404).send({ message: 'Category not found' }) }
 
-      const manager = await managersCollection.findOne({ _id: ObjectId(body.manager)})
-      if (!manager)
-        return res.code(404).send({message: 'Manager not found'})
+      const manager = await managersCollection.findOne({ _id: ObjectId(body.manager) })
+      if (!manager) { return res.code(404).send({ message: 'Manager not found' }) }
 
       await eventsCollection.updateOne(
         { _id: ObjectId(id) },
@@ -124,7 +119,7 @@ module.exports = async (fastify, opts) => {
     schema: {
       security: [
         {
-          "JWT": []
+          JWT: []
         }
       ],
       tags: ['Eventi'],
@@ -161,7 +156,6 @@ module.exports = async (fastify, opts) => {
         // save images
         for (const photo of body.photos) {
           const file = await photo.toBuffer()
-          console.log(Date.now())
           const fileName = `${Date.now()}.${mime.getExtension(photo.mimetype)}`
           const managerImage = path.join(path.join(__dirname, imgsDir, `event_${id}`), fileName)
           const stream = fs.createWriteStream(managerImage)
@@ -202,7 +196,7 @@ module.exports = async (fastify, opts) => {
     schema: {
       security: [
         {
-          "JWT": []
+          JWT: []
         }
       ],
       tags: ['Eventi'],
