@@ -16,16 +16,26 @@ module.exports = async function (fastify, opts) {
     options: Object.assign({}, opts)
   })
 
-  // This loads all schema defined in schemas
+  // loads all schemas
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'schema'),
     options: Object.assign({}, opts)
   })
 
+  fastify.register(AutoLoad, {
+    dir: path.join(__dirname, 'hooks'),
+    options: Object.assign({ prefix: '/api' }, opts)
+  })
+
   // This loads all plugins defined in routes
   // define your routes in one of these
   fastify.register(AutoLoad, {
-    dir: path.join(__dirname, 'routes'),
+    dir: path.join(__dirname, 'routes', 'private'),
+    options: Object.assign({ prefix: '/api' }, opts)
+  })
+
+  fastify.register(AutoLoad, {
+    dir: path.join(__dirname, 'routes', 'public'),
     options: Object.assign({}, opts)
   })
 }

@@ -7,7 +7,8 @@ module.exports = fp(async function (fastify, opts) {
   fastify.addSchema(
     S.object()
       .id('errorSchema')
-      .title('Schema for errors')
+      .title('Error Schema')
+      .description('Schema for error response')
       .prop('message', S.string())
   )
 })
