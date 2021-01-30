@@ -5,7 +5,7 @@ const S = require('fluent-json-schema')
 const DUPLICATE_KEY_ERROR = 11000
 const fs = require('fs')
 const mime = require('mime')
-const imgsDir = '../../public/events'
+const imgsDir = '../../static/events'
 const path = require('path')
 
 module.exports = async (fastify, opts) => {
