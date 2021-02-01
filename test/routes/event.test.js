@@ -1278,7 +1278,7 @@ testWithLogin('get all event', async (t, inject) => {
     }
   })
 
-  inject({
+  await inject({
     method: 'POST',
     url: '/api/events',
     body: {

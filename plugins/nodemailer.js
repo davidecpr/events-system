@@ -16,5 +16,5 @@ module.exports = fp(async (fastify, opts) => {
         }
     }
 
-    fastify.register(Nodemailer, options)
+    //fastify.register(Nodemailer, options)
 })
