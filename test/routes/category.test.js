@@ -200,6 +200,19 @@ testWithLogin('create category', async (t, inject) => {
   t.equal(JSON.parse(res.body).slug, 'nuova categoria di prova')
   t.equal(JSON.parse(res.body).description, 'Descrizione di prova per la nuova categoria')
   t.equal(JSON.parse(res.body).icon, 'fa fa-home')
+
+  const resAlreadyExists = await inject({
+    method: 'POST',
+    url: '/api/category',
+    body: {
+      name: 'test categoria',
+      slug: 'nuova categoria di prova',
+      description: 'Descrizione di prova per la nuova categoria',
+      icon: 'fa fa-home'
+    }
+  })
+
+  t.equal(resAlreadyExists.statusCode, 400)
 })
 
 // Read
@@ -261,7 +274,8 @@ testWithLogin('get all categories', async (t, inject) => {
   })
 
   await inject({
-    method: 'POST',    url: '/api/category',
+    method: 'POST',
+    url: '/api/category',
     body: {
       name: 'test categoria1',
       slug: 'nuova categoria di prova',
@@ -322,7 +336,7 @@ test('cannot edit category, empty body', async (t) => {
     method: 'PUT',
     url: '/api/category/601024ab43d29b1cf1d7e357',
     body: {
-      
+
     }
   })
 
@@ -375,7 +389,7 @@ testWithLogin('edit categoy', async (t, inject) => {
   t.equal(category.description, 'Descrizione di prova per la nuova categoria')
   t.equal(category.icon, 'fa fa-home')
 
-  const res500 = await inject({
+  const resAlreadyExists = await inject({
     method: 'POST',
     url: '/api/category',
     body: {
@@ -386,7 +400,7 @@ testWithLogin('edit categoy', async (t, inject) => {
     }
   })
 
-  t.equal(res500.statusCode, 400)
+  t.equal(resAlreadyExists.statusCode, 400)
 })
 
 // delete

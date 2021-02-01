@@ -33,7 +33,7 @@ module.exports = async (fastify, opts) => {
     }
   })
 
-  fastify.get('/get/photo/:eventId/:photo', {
+  fastify.get('/photo/:eventId/:photo', {
     schema: {
       tags: ['Eventi'],
       params: S.object()

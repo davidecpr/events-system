@@ -50,7 +50,7 @@ module.exports = async (fastify, opts) => {
     }
   })
 
-  fastify.get('/get/logo/:id', {
+  fastify.get('/logo/:id', {
     schema: {
       tags: ['Organizzatori'],
       params: S.object().prop('id', S.raw({ type: 'string', pattern: '^[0-9a-fA-F]{24}$' }).required()),

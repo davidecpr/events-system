@@ -7,6 +7,9 @@ const fs = require('fs')
 const mime = require('mime')
 const imgsDir = '../../static/events'
 const path = require('path')
+const handlebars = require('handlebars')
+const { readFile } = require('fs').promises
+const { resolve } = require('path')
 
 module.exports = async (fastify, opts) => {
   const eventsCollection = fastify.mongo.training.db.collection('events')
@@ -73,6 +76,70 @@ module.exports = async (fastify, opts) => {
     }
   })
 
+  fastify.post('/sendInvitations/:id', {
+    schema: {
+      body: S.object().prop('users', S.array().items(S.string()).minItems(1).required()),
+      params: S.object().prop('id', S.raw({ type: 'string', pattern: '^[0-9a-fA-F]{24}$' })),
+      response: {
+        400: S.ref('errorSchema'),
+        404: S.ref('errorSchema'),
+        500: S.ref('errorSchema')
+      }
+    }
+  }, async (req, res) => {
+    const { id } = req.params
+    const { body } = req
+
+    try {
+      const { nodemailer } = fastify
+      const recipient = body.email
+
+      const event = await eventsCollection.findOne({ _id: ObjectId(id) })
+      if (!event) { return res.code(404).send({ message: 'Event not found' }) }
+
+      if (event.isPublic) { return res.code(400).send({ message: 'This event is public' }) }
+
+      if (body.length > event.maxInvited) { return res.code(400).send({ message: `A maximum of ${event.maxInvited} people can participate in this event` }) }
+
+      const category = await categoriesCollection.findOne({ _id: ObjectId(event.category) })
+      const manager = await managersCollection.findOne({ _id: ObjectId(event.manager) })
+
+      const html = fs.readFileSync(path.join(__dirname, '../../static/mail.html'), 'utf-8')
+
+      const template = handlebars.compile(html)
+      const replacements = {
+        name: 'name',
+        description: event.description,
+        category: category.name,
+        manager: manager.name,
+        state: event.state,
+        maxInvited: event.maxInvited,
+        dateTime: event.dateTime,
+        startDateTime: event.startDateTime,
+        endDateTime: event.endDateTime,
+        type: event.type,
+        tags: event.tags,
+        address: event.street + ' ' + event.streetName + ' ' + event.number + ' ' + event.zipcode,
+        link: event.link,
+        isPublic: event.isPublic ? 'Pubblico' : 'Riservato',
+        details: 'http://' + process.env.FASTIFY_ADDRESS + ':' + process.env.FASTIFY_PORT + '/events/' + event._id
+      }
+      const htmlToSend = template(replacements)
+
+      await nodemailer.sendMail({
+        from: 'testevents21@gmail.com',
+        to: recipient,
+        subject: 'test',
+        html: htmlToSend
+      })
+
+      return res.code(200).send()
+      
+    } catch (e) {
+      return res.code(500).send({ message: e.message })
+    }
+  })
+
   fastify.put('/:id', {
     schema: {
       security: [
@@ -111,11 +178,14 @@ module.exports = async (fastify, opts) => {
 
       return await eventsCollection.findOne({ _id: ObjectId(id) })
     } catch (e) {
+      if (e.code === DUPLICATE_KEY_ERROR) {
+        return res.code(400).send({ message: 'Event with this name already exists' })
+      }
       return res.code(500).send({ message: e.message })
     }
   })
 
-  fastify.post('/set/photos/:id', {
+  fastify.post('/photos/:id', {
     schema: {
       security: [
         {
@@ -162,7 +232,7 @@ module.exports = async (fastify, opts) => {
 
           stream.write(file)
           eventPhotos.push(fileName)
-          returnUrls.push({ url: path.join(__dirname, imgsDir, fileName) })
+          returnUrls.push({ url: fileName })
         }
 
         await eventsCollection.updateOne({ _id: ObjectId(id) }, {
@@ -173,6 +243,8 @@ module.exports = async (fastify, opts) => {
       } else {
         // get single photo
         const photo = body.photos
+
+        if (!photo.mimetype.match(/.(jpg|jpeg|png)$/i)) { return res.code(500).send({ message: `File ${photo.filename} is not an image` }) }
 
         const file = await photo.toBuffer()
         const fileName = `${Date.now()}.${mime.getExtension(photo.mimetype)}`
@@ -185,7 +257,7 @@ module.exports = async (fastify, opts) => {
           $push: { photos: { $each: [fileName] } }
         })
 
-        return { url: path.join(__dirname, imgsDir, fileName) }
+        return { url: fileName }
       }
     } catch (e) {
       return res.code(500).send({ message: e.message })

@@ -119,7 +119,7 @@ module.exports = async (fastify, opts) => {
     }
   })
 
-  fastify.post('/set/logo/:id', {
+  fastify.post('/logo/:id', {
     schema: {
       security: [
         {

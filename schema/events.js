@@ -20,7 +20,7 @@ module.exports = fp(async (fastify, opts) => {
       .prop('endDateTime', S.raw({ type: 'string', format: 'date-time' }))
       .prop('type', S.string().enum(['Offline', 'Online']).required())
       .prop('tags', S.array().items(S.string()).minItems(1).required())
-      .prop('street', S.string().minLength(3).enum(['Via', 'Viale', 'Piazza', 'Corso']).required())
+      .prop('street', S.string().enum(['Via', 'Viale', 'Piazza', 'Corso']).required())
       .prop('streetName', S.string().minLength(5).required())
       .prop('number', S.number().minimum(1).required())
       .prop('country', S.string().minLength(5).required())
