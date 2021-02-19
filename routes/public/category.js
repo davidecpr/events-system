@@ -9,17 +9,31 @@ module.exports = async (fastify, opts) => {
   }, { unique: true })
   const { ObjectId } = fastify.mongo
 
-  fastify.get('/all', {
+  fastify.post('/all', {
     schema: {
       tags: ['Categorie'],
+      body: S.object()
+        .prop('query', S.string()),
       response: {
         200: S.array().items(S.ref('categorySchemaResponse')),
         500: S.ref('errorSchema')
       }
     }
   }, async (req, res) => {
+
+    const {query} = req.body
+
     try {
-      return await categoryCollection.find({}).toArray()
+      if (query !== undefined && query !== '') {
+        return await categoryCollection.find({$or: [
+          {name: new RegExp(query)},
+          {slug: new RegExp(query)},
+          {description: new RegExp(query)},
+        ]}).toArray()
+      } else {
+        return await categoryCollection.find({}).toArray()
+      }
+      
     } catch (e) {
       return res.code(500).send({ message: e.message })
     }

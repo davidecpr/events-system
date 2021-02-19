@@ -34,17 +34,31 @@ module.exports = async (fastify, opts) => {
     }
   })
 
-  fastify.get('/all', {
+  fastify.post('/all', {
     schema: {
       tags: ['Organizzatori'],
+      body: S.object()
+        .prop('query', S.string()),
       response: {
         200: S.array().items(S.ref('managerSchemaResponse')),
         400: S.ref('errorSchema')
       }
     }
   }, async (req, res) => {
+
+    const {query} = req.body
+
     try {
-      return await managersCollection.find({}).toArray()
+      if (query !== undefined && query !== '') {
+        return await managersCollection.find({$or: [
+          {name: new RegExp(query)},
+          {website: new RegExp(query)},
+          {email: new RegExp(query)},
+          {description: new RegExp(query)},
+        ]}).toArray()
+      } else {
+        return await managersCollection.find({}).toArray()
+      }
     } catch (e) {
       return res.code(500).send({ message: e.message })
     }

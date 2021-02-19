@@ -25,6 +25,7 @@ module.exports = fp(async (fastify, opts) => {
       .prop('description', S.string())
       .prop('website', S.string())
       .prop('email', S.string())
+      .prop('logo', S.string())
   )
 
   fastify.addSchema(

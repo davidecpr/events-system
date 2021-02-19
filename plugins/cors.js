@@ -6,7 +6,7 @@ const cors = require('fastify-cors')
 module.exports = fp(async (fastify, opts) => {
   const options = {
     methods: ['OPTIONS', 'GET', 'POST', 'PUT', 'DELETE'],
-    origin: '*'
+    origin: '*',
   }
 
   fastify.register(cors, options)

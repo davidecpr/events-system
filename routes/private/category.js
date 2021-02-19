@@ -70,6 +70,8 @@ module.exports = async (fastify, opts) => {
       const catregory = await categoryCollection.findOne({ _id: ObjectId(id) })
       if (!catregory) { return res.code(404).send({ message: 'Category not found' }) }
 
+      delete body._id
+
       await categoryCollection.updateOne(
         { _id: ObjectId(id) },
         { $set: body }

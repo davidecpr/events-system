@@ -73,6 +73,8 @@ module.exports = async (fastify, opts) => {
       const manager = await managersCollection.findOne({ _id: ObjectId(id) })
       if (!manager) { return res.code(404).send({ message: 'Manager not found' }) }
 
+      delete body._id
+
       await managersCollection.updateOne(
         { _id: ObjectId(id) },
         { $set: body }
@@ -80,6 +82,9 @@ module.exports = async (fastify, opts) => {
 
       return await managersCollection.findOne({ _id: ObjectId(id) })
     } catch (e) {
+      if (e.code === DUPLICATE_KEY_ERROR) {
+        return res.code(400).send({ message: 'Manager with this email already exist' })
+      }
       return res.code(500).send({ message: e.message })
     }
   })
